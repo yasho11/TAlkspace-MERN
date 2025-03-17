@@ -148,3 +148,19 @@ export const getUser = async (req: AuthRequest, res: Response): Promise<void> =>
     
 }
 
+export const checkAuth = async (req: AuthRequest, res: Response): Promise<void> => {   
+    try {
+        const user = req.user;
+        if(!user) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+        res.status(200).json({ User: user });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" , error_area: "checkAuth" });
+    }
+
+    
+    
+}
