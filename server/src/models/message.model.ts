@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import { Document, Schema } from "mongoose";
 
-
-interface Message extends Document {
+//this file is the model for the message schema in the database 
+interface Message extends Document { //this is the interface for the message schema or blueprint
    senderId: mongoose.Types.ObjectId;
     receiverId: mongoose.Types.ObjectId;
     text: string;
@@ -29,7 +29,7 @@ const messageSchema = new Schema({
         type: String,
         required: false,
     }
-}, { timestamps: true });
+}, { timestamps: true });//this is the schema for the message model
 
 const Message = mongoose.model<Message>("Message", messageSchema);
 

@@ -2,7 +2,7 @@ import express from "express";
 import { getUser, signin, signout, signup, updateProfile, checkAuth } from "../controllers/auth.controller";
 import { protectRoute } from "../middleware/auth.middleware";
 
-
+//this file is redirection to the auth controller with appropriate routes
 const router = express.Router();
 
 router.post("/signup", signup);

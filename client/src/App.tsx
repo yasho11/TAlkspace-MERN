@@ -5,14 +5,16 @@ import SignUpPage from "./pages/SignupPage";
 import LoginPage from "./pages/SigninPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
-import { axiosInstance } from "./lib/axios";
 import { useAuthStore } from "./store/useAuthStore";
 import { Loader } from "lucide-react";
 import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
+import { useThemeStore } from "./store/useThemeStore";
 
 function App(){
     const {authUser, checkAuth, isCheckingAuth} = useAuthStore();
 
+    const {theme}= useThemeStore();
     useEffect(() => {
         checkAuth();
     },[]);
@@ -24,16 +26,17 @@ function App(){
         </div>
     )
 return (
-    <div>
+    <div data-theme = {theme}>
         <Navbar />
         <Routes>
             <Route path="/" element={authUser ? <HomePage />: <Navigate to= "/signin"/>} />
             <Route path="/signup" element={!authUser ? <SignUpPage />: <Navigate to = "/"/>}  />
             <Route path="/signin" element={!authUser? <LoginPage /> : <Navigate to = "/"/>} />
             <Route path="/profile" element={authUser?  <ProfilePage />: <Navigate to="/signin"/>} />
-            <Route path="/setting" element= {<SettingsPage/>}/>
+            <Route path="/settings" element= {<SettingsPage/>}/>
         </Routes>
 
+    <Toaster/>
     </div>
 );
 }
