@@ -3,9 +3,17 @@ import Message from "../models/message.model";
 import { Response, Request } from "express";
 import cloudinary from "../libs/cloudinary";
 
+// ✅ Extend Express Request Type
+
 interface AuthRequest extends Request {
     user?: any;  // You can replace `any` with `UserType` if you have a TypeScript type for User
 }   
+
+
+//?------------------------------------------------------------------------------------------------------
+//! @name: getUsersForSidebar
+//! @param: req, res
+//! @desc: Get all users except the logged in user
 
 
 export const getUsersForSidebar = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -20,6 +28,12 @@ export const getUsersForSidebar = async (req: AuthRequest, res: Response): Promi
         res.status(500).json({ message: "Internal server error", error_area: "getUsersForSidebar" });
     }
 };
+
+//?------------------------------------------------------------------------------------------------------
+//! @name: getMessages
+//! @param: req, res
+//! @desc: Get messages between two users
+
 
 export const getMessages = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
@@ -39,6 +53,13 @@ export const getMessages = async (req: AuthRequest, res: Response): Promise<void
     }
 };
 
+
+//?------------------------------------------------------------------------------------------------------
+//! @name: SendMessage
+//! @param: req, res
+//! @desc: Send message to user
+
+// ✅ Send Message
 
 export const SendMessage = async (req: AuthRequest, res: Response): Promise<void> => {  
     const { id:to, text,image } = req.body;

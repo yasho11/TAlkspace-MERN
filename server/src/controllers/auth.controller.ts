@@ -8,6 +8,10 @@ interface AuthRequest extends Request {
     user?: any;  // You can replace `any` with `UserType` if you have a TypeScript type for User
 }
 
+//?------------------------------------------------------------------------------------------------------
+//! @name: signup
+//! @param: req, res
+//! @desc: Register a new user
 
 export const signup = async (req: Request, res: Response): Promise<void> => {  
 
@@ -55,7 +59,10 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
 
 };
 
-
+//?------------------------------------------------------------------------------------------------------
+//! @name: signin
+//! @param: req, res
+//! @desc: Signin a user
 
 export const signin = async (req: Request, res: Response): Promise<void> => {
 
@@ -90,6 +97,12 @@ export const signin = async (req: Request, res: Response): Promise<void> => {
 
 }
 
+//?------------------------------------------------------------------------------------------------------
+//! @name: signout
+//! @param: req, res
+//! @desc: Signout a user
+
+
 export const signout = async (req: Request, res: Response): Promise<void> => { 
  
     try {
@@ -103,6 +116,11 @@ export const signout = async (req: Request, res: Response): Promise<void> => {
 
 }
 
+
+//?------------------------------------------------------------------------------------------------------
+//! @name: updateProfile
+//! @param: req, res
+//! @desc: Update user profile
 
 
 export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => { 
@@ -131,6 +149,13 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
     
 }
 
+
+//?------------------------------------------------------------------------------------------------------
+//! @name: getUser
+//! @param: req, res
+//! @desc: Get user
+
+
 export const getUser = async (req: AuthRequest, res: Response): Promise<void> => { 
     try {
         const user = req.user;
@@ -147,6 +172,13 @@ export const getUser = async (req: AuthRequest, res: Response): Promise<void> =>
     
     
 }
+
+
+//?------------------------------------------------------------------------------------------------------
+//! @name: checkAuth
+//! @param: req, res
+//! @desc: Check if user is authenticated
+
 
 export const checkAuth = async (req: AuthRequest, res: Response): Promise<void> => {   
     try {

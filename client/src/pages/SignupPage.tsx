@@ -6,31 +6,40 @@ import AuthImagePattern from "../components/AuthImagePattern";
 import toast from "react-hot-toast";
 
 const SignUpPage = () => {
+
+  //this is the signup page where users can create an account
   const [showPassword, setShowPassword] = useState(false);
+  //this is the state for the form data
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
 
+  //this is the signup function from the useAuthStore
   const { signup, isSigningUp } = useAuthStore();
 
+  //this function is used to validate the form data
+
   const validateForm = () => {
+    //check if the form data is valid
     if (!formData.name.trim()) return toast.error("Full name is required");
     if (!formData.email.trim()) return toast.error("Email is required");
     if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
     if (!formData.password) return toast.error("Password is required");
-    if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
+    if (formData.password.length < 4) return toast.error("Password must be at least 4 characters");
 
     return true;
   };
 
+
+  //this function is used to handle the form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-  
+    //handle form submission
     console.log("Form data: ", formData);   
     const success = validateForm();
-  
+  //if the form data is valid, the signup function is called  
     if (success) {
       signup(formData); 
     }
@@ -135,7 +144,7 @@ const SignUpPage = () => {
           <div className="text-center">
             <p className="text-base-content/60">
               Already have an account?{" "}
-              <Link to="/login" className="link link-primary">
+              <Link to="/signin" className="link link-primary">
                 Sign in
               </Link>
             </p>
