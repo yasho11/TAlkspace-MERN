@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import {io, Socket} from "socket.io-client";
+
+// Define BASE_URL or import it from your environment configuration
+const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:1256":"/";
 
 
 interface AuthStore {
@@ -11,6 +15,10 @@ interface AuthStore {
     isSigningOut: boolean;
     isSigningIn: boolean;
     isUpdatingProfile: boolean;
+    socket: Socket | null;
+    onlineUsers: String[] ;
+    connectSocket: () => void;
+    disconnectSocket: () => void;
     checkAuth: () => void;
     signin: (data: any) => void; // Replace 'any' with the appropriate type
     logout: () => void;
@@ -18,14 +26,15 @@ interface AuthStore {
     updateProfile: (data: any) => void; // Replace 'any' with the appropriate type
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
     authUser: null,
     isSigningUp: false,
     isSigningIn: false,
     isSigningOut: false,
     isUpdatingProfile: false,
     isCheckingAuth: true,
-
+    socket: null,
+    onlineUsers: [],
     //?--------------------------------------------------------------
     //! @name: checkAuth
     //! @description: This function is used to check if the user is authenticated
@@ -130,6 +139,28 @@ export const useAuthStore = create<AuthStore>((set) => ({
         } finally {
             set({ isUpdatingProfile: false });
         }
-    }
+    },
+
+    connectSocket: () =>{
+        const {authUser} = get();
+        if(!authUser || get().socket?.connected) return;
+
+        const socket = io(BASE_URL, {
+            query: {
+                userId: authUser._id,
+            },
+        });
+        socket.connect();
+
+        set({socket: socket});
+
+        socket.on("getOnlineUsers", (userIds)=>{
+            set({onlineUsers: userIds});
+        });
+    },
+    disconnectSocket: () =>{
+        const socket = get().socket;
+        if (socket && socket.connected) socket.disconnect();
+    },
 
 }));

@@ -1,71 +1,138 @@
-import {create} from "zustand";
+import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
+import { useAuthStore } from "./useAuthStore";
 
-
-interface useChatStore{
-    isUsersLoading : boolean;
-    isMessagesLoading: boolean;
-    selectedUser: string | null;
-    getMessages:(userId:string)=> void;
-    setSelectedUser: () =>void;
-    getUsers:()=> void;
-}
-
+// Define User type
 interface User {
-    id: string;
+    _id: string;
     name: string;
-    // Add other user properties here
+    email: string;
+    profileUrl?: string; // Ensure consistency with `profilePic` field
 }
 
-interface Message {
-    id: string;
+interface MessageData {
     text: string;
-    userId: string;
-    // Add other message properties here
+    image: string | null;  // Since the image can be null before being selected
+  }
+
+// Define Message type
+interface Message {
+    _id: string; // MongoDB automatically assigns this
+    senderId: string; // The ID of the sender
+    receiverId: string; // The ID of the receiver
+    text?: string; // Optional text message
+    image?: string; // Optional image URL
+    createdAt?: Date;// Timestamp for when the message was sent
+    updatedAt?: Date; // Timestamp for last update (if any)
 }
 
+
+// Define Zustand Store Type
 interface ChatStoreState {
-    message: Message[];
+    messages: Message[];  // Fixed incorrect `message` key
     users: User[];
-    selectedUser: string | null;
+    selectedUser: User | null;
     isUsersLoading: boolean;
     isMessagesLoading: boolean;
     getUsers: () => Promise<void>;
     getMessages: (userId: string) => Promise<void>;
-    setSelectedUser: (selectedUser: string | null) => void;
+    SendMessage: (messageData:MessageData) => Promise<void>;
+    subscribeToMessages: () => Promise<void>;
+    unsubscribeFromMessages: ()=> Promise<void>;
+    setSelectedUser: (selectedUser: User | null) => void;
 }
 
-export const useChatStore = create<ChatStoreState>((set) => ({
-    message: [],
+// Create Zustand Store
+export const useChatStore = create<ChatStoreState>((set, get) => ({
+    messages: [],  // Fixed key name from `message` to `messages`
     users: [],
     selectedUser: null,
     isUsersLoading: false,
     isMessagesLoading: false,
 
+    // Fetch Users
     getUsers: async () => {
         set({ isUsersLoading: true });
         try {
             const res = await axiosInstance.get("/messages/users");
-            set({ users: res.data });
+            
+            // Ensure users array exists before setting state
+            if (res.data?.Users) {
+                set({ users: res.data.Users });
+                console.log("Users from chatstore:", res.data.Users);
+            } else {
+                throw new Error("Invalid response format");
+            }
         } catch (error: any) {
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Failed to fetch users");
         } finally {
             set({ isUsersLoading: false });
         }
     },
 
+    // Fetch Messages for Selected User
     getMessages: async (userId: string) => {
         set({ isMessagesLoading: true });
         try {
             const res = await axiosInstance.get(`/messages/${userId}`);
-            set({ users: res.data });
+            // Correctly set messages from res.data.Messages
+            set({ messages: Array.isArray(res.data.Messages) ? res.data.Messages : [] });
+            console.log("Chat store: ", res.data.Messages); // Confirm correct data
         } catch (error: any) {
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Failed to fetch messages");
         } finally {
             set({ isMessagesLoading: false });
         }
     },
+    
+    SendMessage: async(messageData: MessageData) =>{
+        const {selectedUser, messages} = get();
+        try{
+            if(selectedUser) {
+                const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
+                set({messages: [...messages, res.data]});
+            }
 
-    setSelectedUser: (selectedUser: string | null) => set({ selectedUser }),
+
+        }catch(error:any){
+            toast.error(error.response.data.message);
+        }
+    },
+    subscribeToMessages: async () => {
+        return new Promise<void>((resolve) => {
+            const { selectedUser } = get();
+            if (selectedUser) {
+                const socket = useAuthStore.getState().socket;
+
+                if (socket) {
+                    socket.on("newMessage", (newMessage) => {
+                        const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
+
+                        if (!isMessageSentFromSelectedUser) return;
+
+                        set({
+                            messages: [...get().messages, newMessage],
+                        });
+                    });
+                }
+            }
+            resolve();
+        });
+    },
+
+    unsubscribeFromMessages: ()=>{
+        return new Promise<void>((resolve)=>{
+            const socket = useAuthStore.getState().socket;
+            socket?.off("newMessage");
+            resolve();
+        })
+
+    },
+
+    // Set Selected User
+    setSelectedUser: (selectedUser: User | null) => set({ selectedUser }),
+
+
+
 }));
