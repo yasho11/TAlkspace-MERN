@@ -13,9 +13,10 @@
     "mongoose": "^8.12.1",
     "socket.io": "^4.8.1"
   },
-  "scripts": {
-    "dev": "ts-node-dev --transpile-only --ignore-watch node_modules src/server.ts",
-    "start": "node dist/index.js"
+    "scripts": {
+    "build": "tsc",  // This will compile TypeScript files in the server
+    "start": "node dist/index.js", // This will start the server after building the TypeScript code
+    "deploy": "npm run build && npm run start"  // Run both build and start when deploying
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
