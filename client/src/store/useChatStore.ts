@@ -40,9 +40,9 @@ interface ChatStoreState {
     SendMessage: (messageData:MessageData) => Promise<void>;
     subscribeToMessages: () => Promise<void>;
     unsubscribeFromMessages: ()=> Promise<void>;
+    setMessages:(messages: any[])=> Promise<void>;
     setSelectedUser: (selectedUser: User | null) => void;
 }
-
 // Create Zustand Store
 export const useChatStore = create<ChatStoreState>((set, get) => ({
     messages: [],  // Fixed key name from `message` to `messages`
@@ -86,19 +86,29 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
         }
     },
     
-    SendMessage: async(messageData: MessageData) =>{
-        const {selectedUser, messages} = get();
-        try{
-            if(selectedUser) {
+    SendMessage: async (messageData: MessageData) => {
+        const { selectedUser, messages } = get();
+        try {
+            if (selectedUser) {
                 const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-                set({messages: [...messages, res.data]});
+                set({ messages: [...messages, res.data] });
             }
-
-
-        }catch(error:any){
-            toast.error(error.response.data.message);
+        } catch (error: any) {
+            console.error("SendMessage Error:", error);
+    
+            if (error.response) {
+                // Handle API response errors (e.g., status code errors)
+                toast.error(error.response.data?.message || "Failed to send message.");
+            } else if (error.request) {
+                // Handle network errors (request sent but no response)
+                toast.error("Network error: No response from server.");
+            } else {
+                // Handle other errors
+                toast.error("An unexpected error occurred.");
+            }
         }
     },
+    
     subscribeToMessages: async () => {
         return new Promise<void>((resolve) => {
             const { selectedUser } = get();
@@ -131,7 +141,11 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
     },
 
     // Set Selected User
-    setSelectedUser: (selectedUser: User | null) => set({ selectedUser }),
+    setSelectedUser: (selectedUser: User | null) => {
+        set({ selectedUser, messages: [] }); // Clear messages before updating selectedUser
+    },
+    setMessages: (messages: any[]) => Promise.resolve(set({ messages })),
+      
 
 
 

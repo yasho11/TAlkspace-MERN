@@ -22,6 +22,7 @@ function Sidebar() {
         getUsers();
     }, [getUsers]);
 
+    console.log("Online user: ", onlineUsers);
     // Explicitly ensure TypeScript recognizes `users` as an array of User objects
     const filteredUsers: User[] = Array.isArray(users) && users.every((user): user is User => typeof user === "object" && "_id" in user)
         ? showOnlineOnly

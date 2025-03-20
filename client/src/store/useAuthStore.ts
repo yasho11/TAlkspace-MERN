@@ -63,6 +63,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             const response = await axiosInstance.post("/auth/signup", data);
             set({ authUser: response.data });
             toast.success("Account created successfully!");
+            get().connectSocket()
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error("Signup error:", error.response?.data);
@@ -87,6 +88,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             await axiosInstance.post("/auth/signout");
             set({ authUser: null });
             toast.success("Signed out successfully!");
+            get().disconnectSocket()
         } catch (error) {
             console.error("Signout error:", error);
             toast.error("Signout failed!");
@@ -104,7 +106,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             set({ isSigningIn: true });
             const response = await axiosInstance.post("/auth/signin", data);
             set({ authUser: response.data });
+            const {authUser} = get();
+            console.log("LOgin AUth user: ", authUser);
             toast.success("Signed in successfully!");
+
+
+            get().connectSocket();
         } catch (error) {  
             if (axios.isAxiosError(error)) {
                 console.error("Signin error:", error.response?.data);
@@ -141,26 +148,36 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         }
     },
 
-    connectSocket: () =>{
-        const {authUser} = get();
-        if(!authUser || get().socket?.connected) return;
+    
 
+    connectSocket: () => {
+        const { authUser } = get();
+        if (!authUser || get().socket?.connected) return;
+    
+        console.log("AUTH USER ID:", authUser.User._id);
+    
         const socket = io(BASE_URL, {
             query: {
-                userId: authUser._id,
+                userId: authUser.User._id,
             },
+            withCredentials: true, // ✅ FIX: Ensures cookies are sent
         });
+    
         socket.connect();
-
-        set({socket: socket});
-
-        socket.on("getOnlineUsers", (userIds)=>{
-            set({onlineUsers: userIds});
+    
+        set({ socket });
+    
+        socket.on("getOnlineUsers", (userIds) => { // ✅ FIX: Correct event name
+            console.log("Online users:", userIds);
+            set({ onlineUsers: userIds });
         });
     },
-    disconnectSocket: () =>{
+    
+    disconnectSocket: () => {
         const socket = get().socket;
-        if (socket && socket.connected) socket.disconnect();
+        if (socket && socket.connected) {
+            socket.disconnect();
+        }
     },
-
+    
 }));
