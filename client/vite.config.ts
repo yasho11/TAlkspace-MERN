@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [react(),tailwindcss()],
     server: {
     host: '0.0.0.0',  // Bind to all network interfaces
-    port: 1256       // Or any port that Render will bind to
+    port: process.env.PORT||1256       // Or any port that Render will bind to
   },
 });
