@@ -6,6 +6,6 @@ import axios from "axios";
 // withCredentials is set to true to send cookies along with the request
 // This is important for authentication
 export const axiosInstance = axios.create({
-    baseURL: "http://localhost:1256/api/",
+    baseURL: import.meta.env.MODE === "development" ? "http://localhost:1256/api/" : "/api",
     withCredentials: true,
 });
