@@ -15,7 +15,7 @@
   },
   "scripts": {
     "dev": "ts-node-dev --transpile-only --ignore-watch node_modules src/server.ts",
-    "start" : "node src/index.js"
+    "start": "node src/index.js"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
