@@ -88,7 +88,7 @@ export const signin = async (req: Request, res: Response): Promise<void> => {
         }
         //generate jwt token
         generateToken(Existuser._id as string, res);
-        res.status(200).json({ message: "Signin successful", User: Existuser.name });     
+        res.status(200).json({ message: "Signin successful", User: Existuser });     
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" , error_area: "signin" });

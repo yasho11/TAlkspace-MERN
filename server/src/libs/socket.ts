@@ -1,4 +1,4 @@
-import {Server} from "socket.io";
+import { Server} from "socket.io";
 import http from "http";
 import express from "express";
 
@@ -10,34 +10,44 @@ const io = new Server(server, {
     cors: {
         origin: ["http://localhost:5173"],
     },
-})
+});
 
-interface UserSocketMap {
-    [userId: string]: string;
-}
-
-export function getReceiverSocketId(userId: string): string | undefined {
+export function getReceiverSocketId(userId: string) {
     return userSocketMap[userId];
 }
 
-const userSocketMap: Record<string, string> = {};
+const userSocketMap: Record<string, string> = {}; // {userId: socketId}
 
-io.on("connection", (socket)=>{
+io.on("connection", (socket) => {
     console.log("A user connected", socket.id);
 
-    const userId = socket.handshake.query.userId;
+    const userId = socket.handshake.query.userId as string;
 
-    if (typeof userId === "string") userSocketMap[userId] = socket.id;
+    if (userId) {
+        userSocketMap[userId] = socket.id;
+        console.log("User added:", userId);
+    }
 
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    console.log("All connected users:", userSocketMap);
+    io.emit("getOnlineUsers", Object.keys(userSocketMap)); // FIX: Event name
 
-    socket.on("disconnect", () =>{
-        console.log("A user disconnected", socket.id);
-        if (typeof userId === "string") {
-            delete userSocketMap[userId];
+    socket.on("disconnect", () => {
+        console.log("User disconnected", socket.id);
+
+        // Get userId from the map before deleting
+        const disconnectedUserId = Object.keys(userSocketMap).find(
+            (key) => userSocketMap[key] === socket.id
+        );
+
+        if (disconnectedUserId) {
+            delete userSocketMap[disconnectedUserId];
         }
-        io.emit("getOnlineUsers", Object.keys(userSocketMap));
-    })
-})
 
-export {io , app , server};
+        io.emit("getOnlineUsers", Object.keys(userSocketMap)); // FIX: Use correct event name
+    });
+});
+
+export {io, app, server};
+
+
+

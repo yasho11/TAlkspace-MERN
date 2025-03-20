@@ -36,20 +36,19 @@ export const getUsersForSidebar = async (req: AuthRequest, res: Response): Promi
 //! @param: req, res
 //! @desc: Get messages between two users
 
-
-export const getMessages = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMessages = async (req: AuthRequest, res: Response): Promise<any> => {
     try {
         const loggedInUser = req.user;
-        const {id: otherUserId} = req.params;
+        const { id: otherUserId } = req.params;
 
         // Check if both users are provided
         if (!loggedInUser) {
-         res.status(400).json({ message: "User IDs are required." });
+            return res.status(400).json({ message: "User ID is required." });
         }
         if (!otherUserId) {
-            res.status(400).json({ message: "Other User IDs are required." });
-           }
-   
+            return res.status(400).json({ message: "Other User ID is required." });
+        }
+
         // Fetch messages between the logged-in user and the other user
         const messages = await Message.find({
             $or: [
@@ -60,21 +59,19 @@ export const getMessages = async (req: AuthRequest, res: Response): Promise<void
         .sort({ createdAt: 1 }) // Sorting messages by creation date
         .lean(); // Use .lean() for better performance if you don't need Mongoose documents
 
-        console.log(messages);
-        
+        // If no messages are found, return early
         if (messages.length === 0) {
-            res.status(404).json({ message: "No messages found between users." });
+            return res.status(404).json({ message: "No messages found between users." });
         }
 
         // Return the fetched messages
-        res.status(200).json({ Messages: messages });
-        
+        return res.status(200).json({ Messages: messages });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error", error_area: "getMessages" });
+        return res.status(500).json({ message: "Internal server error", error_area: "getMessages" });
     }
 };
-
 
 
 //?------------------------------------------------------------------------------------------------------
@@ -86,9 +83,9 @@ export const getMessages = async (req: AuthRequest, res: Response): Promise<void
 
 export const SendMessage = async (req: AuthRequest, res: Response): Promise<void> => {
     const {  text, image } = req.body;
-    const {id: to} = req.params;
+    const {id: receiverId} = req.params;
     try {
-        const from = req.user._id;  // sender's ID
+        const senderId = req.user._id;  // sender's ID
         let imageUrl;
 
         // Handle image upload to Cloudinary if provided
@@ -98,21 +95,19 @@ export const SendMessage = async (req: AuthRequest, res: Response): Promise<void
         }
 
         // Create the new message with correct field names for sender and receiver
-        const newMessage = new Message({ senderId: from, receiverId: to, text, image: imageUrl });
+        const newMessage = new Message({ senderId, receiverId, text, image: imageUrl });
 
         // Save the message to the database
         await newMessage.save();
         
-        console.log("message sent: " , newMessage);
         // Find the receiver's socket ID for real-time messaging
-        const receiverSocketId = getReceiverSocketId(to);
+        const receiverSocketId = getReceiverSocketId(receiverId);
         if (receiverSocketId) {
             // Emit the new message to the receiver
             io.to(receiverSocketId).emit("newMessage", newMessage);
         }
 
-        // Respond with the message sent successfully
-        res.status(201).json({ message: "Message sent successfully", New_Message: newMessage });
+        res.status(201).json(newMessage);
 
     } catch (error) {
         console.error(error);
