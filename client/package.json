@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "vite preview" 
+    "preview": "vite preview",  // Only for previewing built assets
+    "start": "vite preview"  // Only for production preview in case of client-only static deployment
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.0.14",
@@ -40,5 +40,4 @@
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0"
   }
-
 }
