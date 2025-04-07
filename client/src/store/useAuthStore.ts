@@ -9,7 +9,7 @@ const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:1256
 
 
 interface AuthStore {
-    authUser: any; // Replace 'any' with the appropriate type
+    authUser: any; 
     isCheckingAuth: boolean;
     isSigningUp: boolean;
     isSigningOut: boolean;
@@ -20,10 +20,10 @@ interface AuthStore {
     connectSocket: () => void;
     disconnectSocket: () => void;
     checkAuth: () => void;
-    signin: (data: any) => void; // Replace 'any' with the appropriate type
+    signin: (data: any) => void; 
     logout: () => void;
-    signup: (data: any) => void; // Replace 'any' with the appropriate type
-    updateProfile: (data: any) => void; // Replace 'any' with the appropriate type
+    signup: (data: any) => void; 
+    updateProfile: (data: any) => void; 
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
